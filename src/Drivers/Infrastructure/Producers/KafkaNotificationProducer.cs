@@ -7,13 +7,13 @@ using System.Text.Json.Serialization;
 
 namespace Infrastructure.Producers;
 
-public class KafkaProcessorProducer : IKafkaNotificationProducer
+public class KafkaNotificationProducer : IKafkaNotificationProducer
 {
     private readonly IProducer<Null, string> _producer;
     private readonly string _topicName;
     private readonly JsonSerializerOptions _options;
 
-    public KafkaProcessorProducer(IProducer<Null, string> producer)
+    public KafkaNotificationProducer(IProducer<Null, string> producer)
     {
         _producer = producer;
         _topicName = StaticEnvironmentVariableProvider.KafkaProduceTopicName;

@@ -59,5 +59,7 @@ public class Worker : BackgroundService
 
             _kafkaService.Commit();
         }
+
+        Environment.Exit(0);
     }
 }
