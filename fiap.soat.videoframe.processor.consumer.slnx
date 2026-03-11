@@ -1,10 +1,14 @@
 <Solution>
+  <Folder Name="/SolutionItems/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Adapter/Adapter.csproj" />
-    <Project Path="src/Drivers/Consumer/Consumer.csproj" />
+    <Project Path="src/Domain/Domain.csproj" />
   </Folder>
   <Folder Name="/src/Drivers/">
-    <Project Path="src/Domain/Domain.csproj" />
+    <Project Path="src/Drivers/Consumer/Consumer.csproj" />
     <Project Path="src/Drivers/Infrastructure/Infrastructure.csproj" />
   </Folder>
 </Solution>
