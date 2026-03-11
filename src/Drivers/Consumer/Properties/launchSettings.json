@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Consumer": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "KAFKA_HOST": "localhost:9092",
+        "KAFKA_CONSUMER_GROUP": "fiap-soat-videoframe-notification-consumer"
+      }
+    }
+  }
+}
