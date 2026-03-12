@@ -4,7 +4,10 @@ using Domain;
 using Infrastructure;
 using Serilog;
 
+
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddSerilog((context, loggerConfiguration) => loggerConfiguration.WriteTo.Console());
 
 builder.Services
     .InjectInfrastructureDependencies()
@@ -12,10 +15,6 @@ builder.Services
     .InjectDomainDependencies()
     .AddHostedService<Worker>();
 
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateLogger();
-
 var host = builder.Build();
+
 host.Run();

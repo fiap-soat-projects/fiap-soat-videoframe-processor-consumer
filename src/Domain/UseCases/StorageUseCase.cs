@@ -20,6 +20,6 @@ internal class StorageUseCase : IStorageUseCase
 
     public string GetEditPath(Edit edit)
     {
-        return $"users/{edit.UserId}/{edit.Type}/{Guid.NewGuid()}.zip";
+        return $"users/{edit.UserId}/{edit.Type}/{edit.Id}.zip";
     }
 }
