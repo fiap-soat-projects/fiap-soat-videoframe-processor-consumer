@@ -2,6 +2,8 @@
 using Confluent.Kafka;
 using Infrastructure.Clients;
 using Infrastructure.Clients.Interfaces;
+using Infrastructure.Extractors;
+using Infrastructure.Extractors.Interfaces;
 using Infrastructure.Producers;
 using Infrastructure.Producers.Interfaces;
 using Infrastructure.Providers;
@@ -66,6 +68,13 @@ public static class InfrastructureExtensions
 
         services.AddSingleton(producer);
         services.AddSingleton<IKafkaNotificationProducer, KafkaNotificationProducer>();
+
+        return services;
+    }
+
+    public static IServiceCollection RegisterExtractors(this IServiceCollection services)
+    {
+        services.AddSingleton<IFfmpegFrameExtractor, FfmpegFrameExtractor>();
 
         return services;
     }

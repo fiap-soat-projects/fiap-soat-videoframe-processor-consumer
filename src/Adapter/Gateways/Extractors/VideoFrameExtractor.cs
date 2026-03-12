@@ -1,12 +1,21 @@
 ﻿using Domain.Gateways.Extractors.Interfaces;
-using Infrastructure.Extractors;
+using Infrastructure.Extractors.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Adapter.Gateways.Extractors;
 
+[ExcludeFromCodeCoverage]
 internal class VideoFrameExtractor : IVideoFrameExtractor
 {
-    public async Task GenerateZipAsync(string videoUrl, Stream output, CancellationToken cancellationToken)
+    private readonly IFfmpegFrameExtractor _ffmpegFrameExtractor;
+
+    public VideoFrameExtractor(IFfmpegFrameExtractor ffmpegFrameExtractor)
     {
-        await FfmpegFrameExtractor.GenerateZipAsync(videoUrl, output, cancellationToken);
+        _ffmpegFrameExtractor = ffmpegFrameExtractor;
+    }
+
+    public Task GenerateZipAsync(string videoUrl, Stream output, CancellationToken cancellationToken)
+    {
+        return _ffmpegFrameExtractor.GenerateZipAsync(videoUrl, output, cancellationToken);
     }
 }

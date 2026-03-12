@@ -1,11 +1,12 @@
-﻿using System.Diagnostics;
+﻿using Infrastructure.Extractors.Interfaces;
+using System.Diagnostics;
 using System.IO.Compression;
 
 namespace Infrastructure.Extractors;
 
-public sealed class FfmpegFrameExtractor
+public sealed class FfmpegFrameExtractor : IFfmpegFrameExtractor
 {
-    public static async Task GenerateZipAsync(
+    public async Task GenerateZipAsync(
         string videoUrl,
         Stream output,
         CancellationToken ct)

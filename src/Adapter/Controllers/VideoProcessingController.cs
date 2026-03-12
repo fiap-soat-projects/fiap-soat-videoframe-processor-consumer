@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Adapter.Controllers;
 
-internal class VideoProcessingController : IVideoProcessingController
+public class VideoProcessingController : IVideoProcessingController
 {
     private readonly IEditUseCaseResolver _editUseCaseResolver;
     private readonly INotificationUseCase _notificationUseCase;
