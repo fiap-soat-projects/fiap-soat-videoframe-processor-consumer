@@ -1,0 +1,21 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Consumer": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "KAFKA_HOST": "localhost:9092",
+        "KAFKA_CONSUMER_GROUP": "fiap-soat-videoframe-notification-consumera",
+        "KAFKA_CONSUMER_TOPIC": "teste",
+        "S3BucketBaseUrl": "http://localhost:9000/",
+        "S3BucketUser": "",
+        "S3BucketPassword": "",
+        "S3BucketName": "videoframe-bucket",
+        "NOTIFICATION_TOPIC": "videoframe-notification",
+        "VideoFrameApiUrl": "http://localhost:8080"
+      }
+    }
+  }
+}
