@@ -1,0 +1,26 @@
+services:
+  videoframe-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: videoframe-processor-consumer
+    ports:
+      - "8085:8080"
+      - "8086:8081"
+    environment:
+      - DOTNET_ENVIRONMENT=${DOTNET_ENVIRONMENT}
+      - S3BucketBaseUrl=${S3BucketBaseUrl}
+      - S3BucketUser=${S3BucketUser}
+      - S3BucketPassword=${S3BucketPassword}
+      - S3BucketName=${S3BucketName}
+      - KAFKA_HOST=${KAFKA_HOST}
+      - KAFKA_CONSUMER_GROUP=${KAFKA_CONSUMER_GROUP}
+      - KAFKA_CONSUMER_TOPIC=${KAFKA_CONSUMER_TOPIC}
+      - NOTIFICATION_TOPIC=${NOTIFICATION_TOPIC}
+      - VideoFrameApiUrl=${VideoFrameApiUrl}
+    depends_on:
+      - kafka-videoframe
+      - videoframe-api
+      - minio-videoframe
+    networks:
+      - videoframe-api-network
