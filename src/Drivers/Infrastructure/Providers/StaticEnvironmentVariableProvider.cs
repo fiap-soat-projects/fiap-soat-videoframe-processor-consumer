@@ -3,33 +3,39 @@
 namespace Infrastructure.Providers;
 
 [ExcludeFromCodeCoverage]
-internal static class StaticEnvironmentVariableProvider
+public static class StaticEnvironmentVariableProvider
 {
     private const string KAFKA_HOST_ENV_VARIABLE_NAME = "KAFKA_HOST";
     private const string KAFKA_CONSUMER_GROUP_ENV_VARIABLE_NAME = "KAFKA_CONSUMER_GROUP";
+    private const string KAFKA_CONSUMER_TOPIC_ENV_VARIABLE_NAME = "KAFKA_CONSUMER_TOPIC";
     private const string KAFKA_NOTIFICAITON_TOPIC_ENV_VARIABLE_NAME = "NOTIFICATION_TOPIC";
     private const string S3_BUCKET_BASE_URL = "S3BucketBaseUrl";
     private const string S3_BUCKET_USER = "S3BucketUser";
     private const string S3_BUCKET_PASSWORD = "S3BucketPassword";
     private const string S3_BUCKET_NAME = "S3BucketName";
+    private const string VIDEO_FRAME_API_URL = "VideoFrameApiUrl";
 
     internal static readonly string KafkaHost;
     internal static readonly string KafkaConsumerGroup;
     internal static readonly string KafkaProduceTopicName;
+    public static readonly string KafkaConsumeTopicName;
     internal static readonly string S3BucketBaseUrl;
     internal static readonly string S3BucketUser;
     internal static readonly string S3BucketPassword;
     internal static readonly string S3BucketName;
+    internal static readonly string VideoFrameApiUrl;
 
     static StaticEnvironmentVariableProvider()
     {
         KafkaHost = GetRequiredEnvironmentVariable(KAFKA_HOST_ENV_VARIABLE_NAME);
         KafkaConsumerGroup = GetRequiredEnvironmentVariable(KAFKA_CONSUMER_GROUP_ENV_VARIABLE_NAME);
         KafkaProduceTopicName = GetRequiredEnvironmentVariable(KAFKA_NOTIFICAITON_TOPIC_ENV_VARIABLE_NAME);
+        KafkaConsumeTopicName = GetRequiredEnvironmentVariable(KAFKA_CONSUMER_TOPIC_ENV_VARIABLE_NAME);
         S3BucketBaseUrl = GetRequiredEnvironmentVariable(S3_BUCKET_BASE_URL);
         S3BucketUser = GetRequiredEnvironmentVariable(S3_BUCKET_USER);
         S3BucketPassword = GetRequiredEnvironmentVariable(S3_BUCKET_PASSWORD);
         S3BucketName = GetRequiredEnvironmentVariable(S3_BUCKET_NAME);
+        VideoFrameApiUrl = GetRequiredEnvironmentVariable(VIDEO_FRAME_API_URL);
     }
 
     internal static void Init() { }

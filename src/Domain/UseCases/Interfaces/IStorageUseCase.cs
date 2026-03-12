@@ -5,5 +5,5 @@ namespace Domain.UseCases.Interfaces;
 public interface IStorageUseCase
 {
     Task<string> GetDownloadUrlAsync(string path, CancellationToken cancellationToken);
-    string GetEditPathAsync(Edit edit);
+    string GetEditPath(Edit edit);
 }

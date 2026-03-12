@@ -30,6 +30,7 @@ public static class AdapterExtensions
     {
         services
             .AddSingleton<IStorageClient, StorageClient>()
+            .AddSingleton<IVideoEditClient, VideoEditClient>()
             .AddSingleton<IVideoFrameExtractor, VideoFrameExtractor>()
             .AddSingleton<INotificationProducer, NotificationProducer>();
 

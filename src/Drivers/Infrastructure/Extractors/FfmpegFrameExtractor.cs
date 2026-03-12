@@ -16,14 +16,24 @@ public sealed class FfmpegFrameExtractor
             {
                 FileName = "ffmpeg",
                 Arguments =
-                    $"-i \"{videoUrl}\" -vf fps=1/10 -f image2pipe -vcodec mjpeg -",
+                    $"-i \"{videoUrl}\" -vf fps=1/3 -f image2pipe -vcodec mjpeg -",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false
             }
         };
 
-        process.Start();
+        try
+        {
+            process.Start();
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or FileNotFoundException)
+        {
+            throw new InvalidOperationException(
+                "FFmpeg not found. Make sure it is installed and available in PATH.", ex);
+        }
+
+        var stderrTask = process.StandardError.ReadToEndAsync(ct);
 
         using var zip = new ZipArchive(output, ZipArchiveMode.Create, true);
 
@@ -45,6 +55,12 @@ public sealed class FfmpegFrameExtractor
         }
 
         await process.WaitForExitAsync(ct);
+
+        if (process.ExitCode != 0)
+        {
+            var stderr = await stderrTask;
+            throw new InvalidOperationException($"FFmpeg exited with code {process.ExitCode}: {stderr}");
+        }
     }
 
     private static async Task<byte[]?> ReadNextJpeg(

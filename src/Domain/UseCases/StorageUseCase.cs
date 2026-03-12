@@ -18,8 +18,8 @@ internal class StorageUseCase : IStorageUseCase
         return _storageClient.GetDownloadUrlAsync(path, cancellationToken);
     }
 
-    public string GetEditPathAsync(Edit edit, CancellationToken cancellationToken)
+    public string GetEditPath(Edit edit)
     {
-        return $"user/{edit.UserId}/{edit.Type}/{edit.Id}.zip";
+        return $"users/{edit.UserId}/{edit.Type}/{Guid.NewGuid()}.zip";
     }
 }

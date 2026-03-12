@@ -29,10 +29,20 @@ public class FrameEditUseCase : IEditUseCase
             pipe.Reader.AsStream(),
             cancellationToken);
 
-        await _extractor.GenerateZipAsync(
-            job.VideoUrl,
-            pipe.Writer.AsStream(),
-            cancellationToken);
+        try
+        {
+            await _extractor.GenerateZipAsync(
+                job.VideoUrl,
+                pipe.Writer.AsStream(),
+                cancellationToken);
+
+            await pipe.Writer.CompleteAsync();
+        }
+        catch (Exception ex)
+        {
+            await pipe.Writer.CompleteAsync(ex);
+            throw;
+        }
 
         await uploadTask;
     }

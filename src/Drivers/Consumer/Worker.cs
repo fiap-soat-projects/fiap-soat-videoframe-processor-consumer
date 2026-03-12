@@ -1,9 +1,11 @@
 using Adapter.Controllers.Interfaces;
 using Adapter.Presenters.DTOs;
 using Consumer.DTOs;
+using Infrastructure.Providers;
 using Infrastructure.Services.Interfaces;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Consumer;
 
@@ -12,6 +14,9 @@ public class Worker : BackgroundService
 {
     private readonly IKafkaService _kafkaService;
     private readonly ILogger<Worker> _logger;
+    private readonly string _topicName;
+    private readonly JsonSerializerOptions _options;
+
 
     private readonly IVideoProcessingController _videoProcessingController;
 
@@ -23,33 +28,47 @@ public class Worker : BackgroundService
         _kafkaService = kafkaService;
         _videoProcessingController = videoProcessingController;
         _logger = logger;
+        _topicName = StaticEnvironmentVariableProvider.KafkaConsumeTopicName;
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        _options = options;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
-        const string VIDEOFRAME_NOTIFICATION_TOPIC_NAME = "processor-consumer";
-
-        _kafkaService.Subscribe(VIDEOFRAME_NOTIFICATION_TOPIC_NAME);
+        _kafkaService.Subscribe(_topicName);
 
         while (stoppingToken.IsCancellationRequested is false)
         {
+
+            _logger.LogInformation("Waiting Messages");
             var consumeResult = _kafkaService.Consume(stoppingToken);
 
             var message = consumeResult.Message;
 
             try
             {
-                var processorMessage = JsonSerializer.Deserialize<EditInput>(message.Value);
+                var processorMessage = JsonSerializer.Deserialize<EditInput>(message.Value, _options);
 
                 if (processorMessage == null)
                 {
-                    
                     throw new Exception("Error during deserilizing message");
                 }
 
+                _logger.LogInformation("Starting Process");
+
                 await _videoProcessingController.ProcessAsync(processorMessage, stoppingToken);
+
+                _logger.LogInformation("Finilize Process");
             }
             catch (Exception ex) 
             {

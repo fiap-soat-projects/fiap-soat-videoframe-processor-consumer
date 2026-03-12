@@ -29,11 +29,13 @@ public static class InfrastructureExtensions
 
     public static IServiceCollection RegisterClients(this IServiceCollection services)
     {
-
         var s3url = StaticEnvironmentVariableProvider.S3BucketBaseUrl;
         var s3user = StaticEnvironmentVariableProvider.S3BucketUser;
         var s3password = StaticEnvironmentVariableProvider.S3BucketPassword;
         var s3BucketName = StaticEnvironmentVariableProvider.S3BucketName;
+        var videoFrameApiUrl = StaticEnvironmentVariableProvider.VideoFrameApiUrl;
+        var videoFrameApiUri = new Uri(videoFrameApiUrl, UriKind.Absolute);
+
         var config = new AmazonS3Config
         {
             ServiceURL = s3url,
@@ -44,6 +46,10 @@ public static class InfrastructureExtensions
         var s3BucketClient = new S3BucketClient(amazonS3Client, s3BucketName);
 
         services.AddSingleton<IS3BucketClient>(s3BucketClient);
+        services.AddHttpClient<IVideoFrameClient, VideoFrameClient>(x =>
+        {
+            x.BaseAddress = videoFrameApiUri;
+        });
 
         return services;
     }

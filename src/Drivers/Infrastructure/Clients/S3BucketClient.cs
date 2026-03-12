@@ -1,6 +1,9 @@
-﻿using Amazon.S3;
+﻿using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
+using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Transfer;
 using Infrastructure.Clients.Interfaces;
+using System.Reflection.Metadata;
 
 namespace Infrastructure.Clients;
 
@@ -15,19 +18,6 @@ internal class S3BucketClient : IS3BucketClient
         _bucketName = bucketName;
     }
 
-    public async Task<Stream> DownloadAsync(string path, CancellationToken cancellationToken)
-    {
-        var getRequest = new GetObjectRequest
-        {
-            BucketName = _bucketName,
-            Key = path
-        };
-
-        var response = await _client.GetObjectAsync(getRequest, cancellationToken).ConfigureAwait(false);
-
-        return response.ResponseStream;
-    }
-
     public async Task<string> GetPreSignedDownloadUrlAsync(string path, CancellationToken cancellationToken)
     {
         var downloadRequest = new GetPreSignedUrlRequest
@@ -35,21 +25,32 @@ internal class S3BucketClient : IS3BucketClient
             BucketName = _bucketName,
             Key = path,
             Verb = HttpVerb.GET,
-            Expires = DateTime.UtcNow.AddMinutes(10)
+            Expires = DateTime.UtcNow.AddHours(24)
         };
 
-        return await _client.GetPreSignedURLAsync(downloadRequest);
+        var url = await _client.GetPreSignedURLAsync(downloadRequest);
+            
+        return url.Replace("https", "http");
     }
 
     public async Task UploadAsync(string key, Stream data, CancellationToken cancellationToken)
     {
-        var request = new PutObjectRequest
+        if (data == null) throw new ArgumentNullException(nameof(data));
+
+        if (data.CanSeek)
+        {
+            data.Position = 0;
+        }
+        var transfer = new TransferUtility(_client);
+
+        var putRequest = new TransferUtilityUploadRequest
         {
             BucketName = _bucketName,
             Key = key,
-            InputStream = data
+            InputStream = data,
+            ContentType = "application/zip",
         };
 
-        await _client.PutObjectAsync(request, cancellationToken);
+        await transfer.UploadAsync(putRequest, cancellationToken);
     }
 }

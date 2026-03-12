@@ -11,5 +11,5 @@ public record NotificationMessage
     public required NotificationType Type { get; init; }
     public IEnumerable<NotificationTarget> NotificationTargets { get; init; } = [];
     public string? FileUrl { get; init; }
-    public string? ErrorMessage { get; init; }
+    public string? Error { get; init; }
 }

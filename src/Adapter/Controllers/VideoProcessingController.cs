@@ -36,7 +36,7 @@ internal class VideoProcessingController : IVideoProcessingController
                 editInput.EditType,
                 editInput.NotificationTargets.Select(x => x.ToDomain()));
 
-        var resultPath = _storageUseCase.GetEditPathAsync(edit);
+        var resultPath = _storageUseCase.GetEditPath(edit);
 
         try
         {
