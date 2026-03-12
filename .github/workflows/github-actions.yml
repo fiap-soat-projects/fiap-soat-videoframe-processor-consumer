@@ -1,0 +1,162 @@
+name: pipeline-consumer-dotnet
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  APP_NAME: 'videoframe-processor-consumer'
+  SONAR_REPO_NAME: 'fiap-soat-videoframe-processor-consumer'
+  IMAGE_NAME: 'fiap-soat-videoframe-processor-consumer'
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  dotnet_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }} 
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Unit Tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
+  
+  sonarqube-analysis:
+    runs-on: ubuntu-latest
+    needs: dotnet_build
+    environment: prd
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+  
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+  
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Install DotNet Coverage
+        run: dotnet tool install --global dotnet-coverage
+
+      - name: SonarCloud - Begin
+        run: |
+          dotnet-sonarscanner begin \
+            /k:"fiap-soat-projects_${{ env.SONAR_REPO_NAME }}" \
+            /o:"fiap-soat-projects" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml \
+            /d:sonar.exclusions="**/Api/**,**/Infrastructure/**" \
+            /d:sonar.inclusions="**/*.cs" 
+      
+      - name: Build
+        run: dotnet build --configuration Release --no-incremental
+      
+      - name: DotNet Coverage Collect
+        run: dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
+  
+      - name: SonarCloud - End
+        run: |
+          dotnet-sonarscanner end \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+      - name: SonarCloud - Quality Gate (API)
+        run: |
+          REPORT_FILE=".sonarqube/out/.sonar/report-task.txt"
+
+          if [ ! -f "$REPORT_FILE" ]; then
+            echo "report-task.txt não encontrado"
+            exit 1
+          fi
+
+          CE_TASK_ID=$(grep ceTaskId "$REPORT_FILE" | cut -d'=' -f2)
+          SERVER_URL=$(grep serverUrl "$REPORT_FILE" | cut -d'=' -f2)
+
+          echo "Aguardando processamento do SonarCloud..."
+
+          while true; do
+            CE_STATUS=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+              "$SERVER_URL/api/ce/task?id=$CE_TASK_ID" | jq -r '.task.status')
+
+            if [ "$CE_STATUS" = "SUCCESS" ]; then
+              break
+            fi
+
+            if [ "$CE_STATUS" = "FAILED" ]; then
+              echo "Processamento da análise falhou"
+              exit 1
+            fi
+
+            sleep 5
+          done
+
+          ANALYSIS_ID=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "$SERVER_URL/api/ce/task?id=$CE_TASK_ID" | jq -r '.task.analysisId')
+
+          QG_STATUS=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "$SERVER_URL/api/qualitygates/project_status?analysisId=$ANALYSIS_ID" \
+            | jq -r '.projectStatus.status')
+
+          echo "Quality Gate status: $QG_STATUS"
+
+          if [ "$QG_STATUS" != "OK" ]; then
+            echo "❌ Quality Gate reprovado"
+            exit 1
+          fi
+
+          echo "✅ Quality Gate aprovado"
+
+  build_push_image:
+    runs-on: ubuntu-latest
+    needs: sonarqube-analysis
+    environment: prd
+
+    steps:
+      - name: Repository checkout
+        uses: actions/checkout@v4
+
+      - name: Create image tag
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            VERSION="pr-${{ github.event.pull_request.number }}"
+          else
+            VERSION="latest"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build&Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_TENANT }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.version }}
