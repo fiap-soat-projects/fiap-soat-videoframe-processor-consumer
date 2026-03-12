@@ -67,7 +67,7 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml \
-            /d:sonar.exclusions="**/Api/**,**/Infrastructure/**" \
+            /d:sonar.exclusions="**/Consumer/**,**/Infrastructure/**" \
             /d:sonar.inclusions="**/*.cs" 
       
       - name: Build
