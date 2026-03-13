@@ -1,9 +1,7 @@
-﻿using Amazon.Runtime.Internal.Endpoints.StandardLibrary;
-using Amazon.S3;
+﻿using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Infrastructure.Clients.Interfaces;
-using System.Reflection.Metadata;
 
 namespace Infrastructure.Clients;
 
@@ -29,8 +27,8 @@ internal class S3BucketClient : IS3BucketClient
         };
 
         var url = await _client.GetPreSignedURLAsync(downloadRequest);
-            
-        return url.Replace("https", "http");
+
+        return url;
     }
 
     public async Task UploadAsync(string key, Stream data, CancellationToken cancellationToken)
