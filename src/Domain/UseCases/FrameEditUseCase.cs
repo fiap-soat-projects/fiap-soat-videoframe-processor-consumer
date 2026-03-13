@@ -41,7 +41,7 @@ public class FrameEditUseCase : IEditUseCase
         catch (Exception ex)
         {
             await pipe.Writer.CompleteAsync(ex);
-            throw;
+            throw new Exception("Failed while try to create frames");
         }
 
         await uploadTask;

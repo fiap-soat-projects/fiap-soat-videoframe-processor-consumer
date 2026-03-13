@@ -183,8 +183,8 @@ public class ProcessAsyncTests : FrameEditUseCaseDependenciesMock
         var act = async () => await _sut.ProcessAsync(job, cancellationToken);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Extraction failed");
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage("Failed while try to create frames");
     }
 
     [Fact]

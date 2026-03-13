@@ -21,7 +21,6 @@ public class KafkaNotificationProducer : IKafkaNotificationProducer
         var options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         options.Converters.Add(new JsonStringEnumConverter());
