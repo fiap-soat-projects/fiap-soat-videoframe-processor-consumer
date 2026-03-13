@@ -24,7 +24,8 @@ public static class InfrastructureExtensions
         services
             .AddSingleton<IKafkaService, KafkaService>()
             .RegisterClients()
-            .RegisterProducers();
+            .RegisterProducers()
+            .RegisterExtractors();
 
         return services;
     }
